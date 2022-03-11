@@ -36,6 +36,14 @@ public class Vector2d {
     }
 
     /**
+     * Конструктор вектора создаёт нулевой вектор
+     */
+    public Vector2d(Vector2i v) {
+        this.x = v.x;
+        this.y = v.y;
+    }
+
+    /**
      * Сложить два вектора
      *
      * @param a первый вектор
@@ -57,6 +65,7 @@ public class Vector2d {
         return new Vector2d(s * x, s * y);
     }
 
+
     /**
      * Добавить вектор к текущему вектору
      *
@@ -65,6 +74,48 @@ public class Vector2d {
     public void add(Vector2d v) {
         this.x = this.x + v.x;
         this.y = this.y + v.y;
+    }
+
+    /**
+     * Векторное умножение векторов
+     *
+     * @param v второй вектор
+     * @return результат умножения
+     */
+    public double cross(Vector2d v) {
+        return this.x * v.y - this.y * v.x;
+    }
+
+    /**
+     * Получить целочисленный вектор
+     *
+     * @return целочисленный вектор
+     */
+    public Vector2i intVector() {
+        return new Vector2i((int) x, (int) y);
+    }
+
+    /**
+     * Повернуть вектор
+     *
+     * @param a угол
+     * @return повёрнутый вектор
+     */
+    public Vector2d rotated(double a) {
+        return new Vector2d(
+                x * Math.cos(a) - y * Math.sin(a),
+                x * Math.sin(a) + y * Math.cos(a)
+        );
+    }
+
+    /**
+     * Нормализация вектора
+     *
+     * @return нормированный вектор
+     */
+    public Vector2d norm() {
+        double length = length();
+        return new Vector2d(x / length, y / length);
     }
 
     /**

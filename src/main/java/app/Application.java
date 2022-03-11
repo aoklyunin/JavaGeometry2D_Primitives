@@ -1,37 +1,24 @@
 package app;
 
-import dialogs.PanelGameInfo;
 import io.github.humbleui.jwm.*;
 import io.github.humbleui.jwm.skija.EventFrameSkija;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Surface;
 import misc.CoordinateSystem2i;
-import panels.PanelGame;
+import misc.Misc;
+import panels.PanelPrimitives;
 
 import java.io.File;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.function.Consumer;
-
-import static app.Colors.*;
 
 /**
  * Класс окна приложения
  */
 public class Application implements Consumer<Event> {
     /**
-     * Режимы работы приложения
+     * цвет фона
      */
-    public enum Mode {
-        /**
-         * Основной режим работы
-         */
-        WORK,
-        /**
-         * Окно информации
-         */
-        INFO
-    }
+    public static final int APP_BACKGROUND_COLOR = Misc.getColor(255, 38, 70, 83);
 
     /**
      * окно приложения
@@ -45,30 +32,11 @@ public class Application implements Consumer<Event> {
      * радиус скругления элементов
      */
     public static final int C_RAD_IN_PX = 4;
-    /**
-     * кнопка изменений: у мака - это `Command`, у windows - `Ctrl`
-     */
-    public static final KeyModifier MODIFIER = Platform.CURRENT == Platform.MACOS ? KeyModifier.MAC_COMMAND : KeyModifier.CONTROL;
-    /**
-     * время последнего нажатия клавиши мыши
-     */
-    Date prevEventMouseButtonTime;
-    /**
-     * флаг того, что окно развёрнуто на весь экран
-     */
-    private boolean maximizedWindow;
+
     /**
      * Панель информации
      */
-    private final PanelGameInfo panelGameInfo;
-    /**
-     * Текущий режим(по умолчанию рабочий)
-     */
-    public static Mode currentMode = Mode.WORK;
-    /**
-     * Панель игры
-     */
-    private final PanelGame panelGame;
+    private final PanelPrimitives panelPrimitives;
 
     /**
      * Конструктор окна приложения
@@ -77,15 +45,8 @@ public class Application implements Consumer<Event> {
         // создаём окно
         window = App.makeWindow();
 
-        // панель информации игры
-        panelGameInfo = new PanelGameInfo(window, true, DIALOG_BACKGROUND_COLOR, PANEL_PADDING,
-                () -> {
-                    Application.currentMode = Application.Mode.WORK;
-                    PanelGame.game.restart();
-                });
-
         // панель игры
-        panelGame = new PanelGame(window, true, DIALOG_BACKGROUND_COLOR, PANEL_PADDING);
+        panelPrimitives = new PanelPrimitives(window, false, APP_BACKGROUND_COLOR, PANEL_PADDING);
 
         // задаём обработчиком событий текущий объект
         window.setEventListener(this);
@@ -134,39 +95,8 @@ public class Application implements Consumer<Event> {
      */
     @Override
     public void accept(Event e) {
-        // если событие кнопка мыши
-        if (e instanceof EventMouseButton) {
-            // получаем текущие дату и время
-            Date now = Calendar.getInstance().getTime();
-            // если уже было нажатие
-            if (prevEventMouseButtonTime != null) {
-                // если между ними прошло больше 200 мс
-                long delta = now.getTime() - prevEventMouseButtonTime.getTime();
-                if (delta < 200)
-                    return;
-            }
-            // сохраняем время последнего события
-            prevEventMouseButtonTime = now;
-        }
-        // кнопки клавиатуры
-        else if (e instanceof EventKey eventKey) {
-            // кнопка нажата с Ctrl
-            if (eventKey.isPressed()) {
-                if (eventKey.isModifierDown(MODIFIER))
-                    // разбираем, какую именно кнопку нажали
-                    switch (eventKey.getKey()) {
-                        case W -> window.close();
-                        case H -> window.minimize();
-                    }
-                else
-                    switch (eventKey.getKey()) {
-                        case W, SPACE -> PanelGame.game.up();
-                        case ESCAPE -> window.close();
-                    }
-            }
-        }
         // если событие - это закрытие окна
-        else if (e instanceof EventWindowClose) {
+        if (e instanceof EventWindowClose) {
             // завершаем работу приложения
             App.terminate();
             // закрытие окна
@@ -181,10 +111,8 @@ public class Application implements Consumer<Event> {
             window.requestFrame();
         }
 
-        switch (currentMode) {
-            case INFO -> panelGameInfo.accept(e);
-            case WORK -> panelGame.accept(e);
-        }
+        // запускаем обработку событий у панели примитивов
+        panelPrimitives.accept(e);
     }
 
     /**
@@ -199,12 +127,8 @@ public class Application implements Consumer<Event> {
         // очищаем канвас
         canvas.clear(APP_BACKGROUND_COLOR);
         // рисуем панели
-        panelGame.paint(canvas, windowCS);
+        panelPrimitives.paint(canvas, windowCS);
         canvas.restore();
 
-        // если нужно отобразить информацию,
-        if (currentMode.equals(Mode.INFO))
-            // выводим её
-            panelGameInfo.paint(canvas, windowCS);
     }
 }
