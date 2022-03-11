@@ -89,12 +89,12 @@ public class PanelPrimitives extends Panel {
                 // x координата первой точки
                 points[i * 4] = (float) (center.x + radX * Math.cos(Math.PI / 20 * i));
                 // y координата первой точки
-                points[i * 4 + 1] = (float) (center.x + radY * Math.sin(Math.PI / 20 * i));
+                points[i * 4 + 1] = (float) (center.y + radY * Math.sin(Math.PI / 20 * i));
 
                 // x координата второй точки
                 points[i * 4 + 2] = (float) (center.x + radX * Math.cos(Math.PI / 20 * (i + 1)));
                 // y координата второй точки
-                points[i * 4 + 3] = (float) (center.x + radY * Math.sin(Math.PI / 20 * (i + 1)));
+                points[i * 4 + 3] = (float) (center.y + radY * Math.sin(Math.PI / 20 * (i + 1)));
             }
             // рисуем линии
             canvas.drawLines(points, p);
@@ -158,7 +158,57 @@ public class PanelPrimitives extends Panel {
             // восстанавливаем исходный цвет рисования
             p.setColor(paintColor);
         });
+        // добавляем параллельный эллипс
+        primitives.add((canvas, windowCS, p) -> {
+            // левая верхняя вершина
+            Vector2i pointA = new Vector2i(200, 100);
+            // правая нижняя
+            Vector2i pointC = new Vector2i(300, 500);
+            // находим вектор AC
+            Vector2i AC = Vector2i.subtract(pointC, pointA);
+            // центр окружности
+            Vector2i center = Vector2i.sum(pointA, Vector2i.div(AC, 2));
+            // радиус вдоль оси x
+            int radX = Math.abs(AC.x) / 2;
+            // радиус вдоль оси y
+            int radY = Math.abs(AC.y) / 2;
+            // кол-во отсчётов цикла
+            int loopCnt = 40;
+            // создаём массив координат опорных точек
+            float[] points = new float[loopCnt * 4];
+            // запускаем цикл
+            for (int i = 0; i < loopCnt; i++) {
+                // x координата первой точки
+                points[i * 4] = (float) (center.x + radX * Math.cos(Math.PI / 20 * i));
+                // y координата первой точки
+                points[i * 4 + 1] = (float) (center.y + radY * Math.sin(Math.PI / 20 * i));
 
+                // x координата второй точки
+                points[i * 4 + 2] = (float) (center.x + radX * Math.cos(Math.PI / 20 * (i + 1)));
+                // y координата второй точки
+                points[i * 4 + 3] = (float) (center.y + radY * Math.sin(Math.PI / 20 * (i + 1)));
+            }
+            // рисуем линии
+            canvas.drawLines(points, p);
+
+            // сохраняем цвет рисования
+            int paintColor = p.getColor();
+            // задаём красный цвет
+            p.setColor(Misc.getColor(200, 255, 0, 0));
+
+            // рассчитываем опорные точки прямоугольника
+            Vector2i pointB = new Vector2i(pointA.x, pointC.y);
+            Vector2i pointD = new Vector2i(pointC.x, pointA.y);
+
+            // рисуем его стороны
+            canvas.drawLine(pointA.x, pointA.y, pointB.x, pointB.y, p);
+            canvas.drawLine(pointB.x, pointB.y, pointC.x, pointC.y, p);
+            canvas.drawLine(pointC.x, pointC.y, pointD.x, pointD.y, p);
+            canvas.drawLine(pointD.x, pointD.y, pointA.x, pointA.y, p);
+            // восстанавливаем исходный цвет рисования
+            p.setColor(paintColor);
+
+        });
 
         primitivePos = primitives.size() - 1;
     }

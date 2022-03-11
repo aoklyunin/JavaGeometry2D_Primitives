@@ -66,6 +66,17 @@ public class Vector2i {
     }
 
     /**
+     * Разделить вектор на число
+     *
+     * @param v вектор
+     * @param d число
+     * @return результат деления
+     */
+    public static Vector2i div(Vector2i v, int d) {
+        return new Vector2i(v.x / d, v.y / d);
+    }
+
+    /**
      * Добавить вектор к текущему вектору
      *
      * @param v вектор, который нужно добавить
