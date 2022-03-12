@@ -209,6 +209,36 @@ public class PanelPrimitives extends Panel {
             p.setColor(paintColor);
 
         });
+        // добавляем параллелограмм
+        primitives.add((canvas, windowCS, p) -> {
+            // вершины треугольника
+            Vector2i pointA = new Vector2i(200, 300);
+            Vector2i pointB = new Vector2i(100, 100);
+            Vector2i pointC = new Vector2i(300, 200);
+
+            // определяем вектор смещения
+            Vector2i AB = Vector2i.subtract(pointA, pointB);
+            Vector2i pointD = Vector2i.sum(pointC, AB);
+
+            // рисуем его стороны
+            canvas.drawLine(pointA.x, pointA.y, pointB.x, pointB.y, p);
+            canvas.drawLine(pointB.x, pointB.y, pointC.x, pointC.y, p);
+            canvas.drawLine(pointC.x, pointC.y, pointD.x, pointD.y, p);
+            canvas.drawLine(pointD.x, pointD.y, pointA.x, pointA.y, p);
+
+            // сохраняем цвет рисования
+            int paintColor = p.getColor();
+            // задаём красный цвет
+            p.setColor(Misc.getColor(200, 255, 0, 0));
+
+            // рисуем опорные точки
+            canvas.drawRRect(RRect.makeXYWH(pointA.x - 4, pointA.y - 4, 8, 8, 4), p);
+            canvas.drawRRect(RRect.makeXYWH(pointB.x - 4, pointB.y - 4, 8, 8, 4), p);
+            canvas.drawRRect(RRect.makeXYWH(pointC.x - 4, pointC.y - 4, 8, 8, 4), p);
+
+            // восстанавливаем исходный цвет рисования
+            p.setColor(paintColor);
+        });
 
         primitivePos = primitives.size() - 1;
     }
