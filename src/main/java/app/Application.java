@@ -109,6 +109,13 @@ public class Application implements Consumer<Event> {
         } else if (e instanceof EventFrame) {
             // запускаем рисование кадра
             window.requestFrame();
+        }  // кнопки клавиатуры
+        else if (e instanceof EventKey eventKey) {
+            if (eventKey.isPressed()) {
+                switch (eventKey.getKey()) {
+                    case ESCAPE -> window.close();
+                }
+            }
         }
 
         // запускаем обработку событий у панели примитивов
@@ -124,7 +131,7 @@ public class Application implements Consumer<Event> {
     public void paint(Canvas canvas, CoordinateSystem2i windowCS) {
         // запоминаем изменения (пока что там просто заливка цветом)
         canvas.save();
-        // очищаем канвас
+        // очищаем область рисования
         canvas.clear(APP_BACKGROUND_COLOR);
         // рисуем панели
         panelPrimitives.paint(canvas, windowCS);

@@ -1,20 +1,19 @@
 package panels;
 
 import app.Line;
+import app.Polygon;
 import app.Primitive;
 import io.github.humbleui.jwm.Event;
 import io.github.humbleui.jwm.EventKey;
 import io.github.humbleui.jwm.Window;
-import io.github.humbleui.skija.Canvas;
-import io.github.humbleui.skija.Paint;
-import io.github.humbleui.skija.RRect;
-import io.github.humbleui.skija.Rect;
+import io.github.humbleui.skija.*;
 import misc.CoordinateSystem2i;
 import misc.Misc;
 import misc.Vector2d;
 import misc.Vector2i;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Панель игры
@@ -237,6 +236,156 @@ public class PanelPrimitives extends Panel {
             canvas.drawRRect(RRect.makeXYWH(pointC.x - 4, pointC.y - 4, 8, 8, 4), p);
 
             // восстанавливаем исходный цвет рисования
+            p.setColor(paintColor);
+        });
+        // добавляем угол
+        primitives.add((canvas, windowCS, p) -> {
+            // вершина угла
+            Vector2i pointA = new Vector2i(400, 400);
+            // опорные точки
+            Vector2i pointB = new Vector2i(100, 200);
+            Vector2i pointC = new Vector2i(500, 300);
+
+            // определяем вектор смещения
+            Vector2i AB = Vector2i.subtract(pointB, pointA);
+            Vector2i AC = Vector2i.subtract(pointC, pointA);
+
+            // получаем максимальную длину отрезка на экране, как длину диагонали экрана
+            int maxDistance = (int) windowCS.getSize().length();
+            // получаем новые точки для рисования, которые гарантируют, что линия
+            // будет нарисована до границ экрана
+            Vector2i renderPointB = Vector2i.sum(pointA, Vector2i.mult(AB, maxDistance));
+            Vector2i renderPointC = Vector2i.sum(pointA, Vector2i.mult(AC, maxDistance));
+
+            // рисуем его стороны
+            canvas.drawLine(pointA.x, pointA.y, renderPointB.x, renderPointB.y, p);
+            canvas.drawLine(pointA.x, pointA.y, renderPointC.x, renderPointC.y, p);
+
+            // сохраняем цвет рисования
+            int paintColor = p.getColor();
+            // задаём красный цвет
+            p.setColor(Misc.getColor(200, 255, 0, 0));
+
+            // рисуем опорные точки
+            canvas.drawRRect(RRect.makeXYWH(pointA.x - 4, pointA.y - 4, 8, 8, 4), p);
+            canvas.drawRRect(RRect.makeXYWH(pointB.x - 4, pointB.y - 4, 8, 8, 4), p);
+            canvas.drawRRect(RRect.makeXYWH(pointC.x - 4, pointC.y - 4, 8, 8, 4), p);
+
+            // восстанавливаем исходный цвет рисования
+            p.setColor(paintColor);
+        });
+        // добавляем угол
+        primitives.add((canvas, windowCS, p) -> {
+            // вершина угла
+            Vector2i pointA = new Vector2i(400, 400);
+            // опорные точки
+            Vector2i pointB = new Vector2i(100, 200);
+            // отрезок AB
+            Vector2i AB = Vector2i.subtract(pointB, pointA);
+            // толщина линии
+            double width = 40;
+            // вектор направления для откладывания ширины
+            Vector2i widthDirection = new Vector2d(AB).rotated(Math.PI / 2).norm().mult(width / 2).intVector();
+
+            // получаем максимальную длину отрезка на экране, как длину диагонали экрана
+            int maxDistance = (int) windowCS.getSize().length();
+            // создаём вектор направления для рисования условно бесконечной полосы
+            Vector2i direction = new Vector2d(AB).norm().mult(maxDistance).intVector();
+
+            // получаем опорные точки для откладывания направления
+            Vector2i basePointA = Vector2i.sum(pointA, widthDirection);
+            Vector2i basePointB = Vector2i.subtract(pointA, widthDirection);
+
+            // получаем точки рисования
+            Vector2i renderPointA = Vector2i.sum(basePointA, direction);
+            Vector2i renderPointD = Vector2i.subtract(basePointA, direction);
+            Vector2i renderPointB = Vector2i.sum(basePointB, direction);
+            Vector2i renderPointC = Vector2i.subtract(basePointB, direction);
+
+            // рисуем отрезки
+            canvas.drawLine(renderPointA.x, renderPointA.y, renderPointB.x, renderPointB.y, p);
+            canvas.drawLine(renderPointB.x, renderPointB.y, renderPointC.x, renderPointC.y, p);
+            canvas.drawLine(renderPointC.x, renderPointC.y, renderPointD.x, renderPointD.y, p);
+            canvas.drawLine(renderPointD.x, renderPointD.y, renderPointA.x, renderPointA.y, p);
+            // сохраняем цвет рисования
+            int paintColor = p.getColor();
+            // задаём красный цвет
+            p.setColor(Misc.getColor(200, 255, 0, 0));
+            // рисуем исходные точки
+            canvas.drawRRect(RRect.makeXYWH(pointA.x - 4, pointA.y - 4, 8, 8, 4), p);
+            canvas.drawRRect(RRect.makeXYWH(pointB.x - 4, pointB.y - 4, 8, 8, 4), p);
+            // задаём зелёный цвет
+            p.setColor(Misc.getColor(200, 0, 255, 0));
+            // рисуем опорные точки
+            canvas.drawRRect(RRect.makeXYWH(basePointA.x - 4, basePointA.y - 4, 8, 8, 4), p);
+            canvas.drawRRect(RRect.makeXYWH(basePointB.x - 4, basePointB.y - 4, 8, 8, 4), p);
+            // восстанавливаем исходный цвет рисования
+            p.setColor(paintColor);
+        });
+        // широкий луч
+        primitives.add((canvas, windowCS, p) -> {
+            // вершина угла
+            Vector2i pointA = new Vector2i(400, 400);
+            // опорные точки
+            Vector2i pointB = new Vector2i(100, 200);
+            // отрезок AB
+            Vector2i AB = Vector2i.subtract(pointB, pointA);
+
+            // получаем максимальную длину отрезка на экране, как длину диагонали экрана
+            int maxDistance = (int) windowCS.getSize().length();
+            // создаём вектор направления для рисования условно бесконечной полосы
+            Vector2i direction = new Vector2d(AB).norm().rotated(Math.PI / 2).mult(maxDistance).intVector();
+
+            // получаем точки рисования
+            Vector2i renderPointC = Vector2i.sum(pointA, direction);
+            Vector2i renderPointD = Vector2i.sum(pointB, direction);
+
+            // рисуем отрезки
+            canvas.drawLine(pointA.x, pointA.y, pointB.x, pointB.y, p);
+            canvas.drawLine(pointA.x, pointA.y, renderPointC.x, renderPointC.y, p);
+            canvas.drawLine(pointB.x, pointB.y, renderPointD.x, renderPointD.y, p);
+            // сохраняем цвет рисования
+            int paintColor = p.getColor();
+            // задаём красный цвет
+            p.setColor(Misc.getColor(200, 255, 0, 0));
+            // рисуем исходные точки
+            canvas.drawRRect(RRect.makeXYWH(pointA.x - 4, pointA.y - 4, 8, 8, 4), p);
+            canvas.drawRRect(RRect.makeXYWH(pointB.x - 4, pointB.y - 4, 8, 8, 4), p);
+            // восстанавливаем исходный цвет рисования
+            p.setColor(paintColor);
+        });
+        // многоугольник
+        primitives.add((canvas, windowCS, p) -> {
+            // кол-во точек полигона
+            int pCnt = 5;
+            // центр полигона
+            Vector2i center = new Vector2i(500, 500);
+            // радиус
+            float rad = 200;
+            // создаём полигон
+            Polygon polygon = new Polygon();
+
+            // заполняем массив
+            for (int i = 0; i < pCnt; i++) {
+                // добавляем новую точку
+                polygon.add(
+                        center.x + (int) (rad * Math.cos(2 * Math.PI / pCnt * i)),
+                        center.y + (int) (rad * Math.sin(2 * Math.PI / pCnt * i)),
+                        Misc.getColor(230, 255 * i / pCnt, 0, 0)
+                );
+            }
+            // рассчитываем полигон
+            polygon.calculate();
+            // рисуем полигон
+            polygon.paint(canvas, p);
+
+            // сохраняем цвет рисования
+            int paintColor = p.getColor();
+            // задаём синий цвет
+            p.setColor(Misc.getColor(140, 0, 0, 255));
+            Point pCenter = polygon.getCenter();
+            canvas.drawRRect(RRect.makeXYWH(pCenter.getX() - 4, pCenter.getY() - 4, 8, 8, 4), p);
+            // восстанавливаем цвет
             p.setColor(paintColor);
         });
 
